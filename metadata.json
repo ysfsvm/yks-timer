@@ -1,0 +1,8 @@
+{
+  "name": "Deadline timer",
+  "description": "Deadline countdown timer extension for Gnome Shell",
+  "uuid": "deadline_timer@patwork.pl",
+  "shell-version": [
+    "3.36"
+  ]
+}
