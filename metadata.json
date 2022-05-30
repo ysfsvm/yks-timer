@@ -3,6 +3,6 @@
   "name": "Deadline timer",
   "description": "Deadline countdown timer extension for Gnome Shell",
   "shell-version": [ "3.36" ],
-  "url": "https://github.com/patwork/",
+  "url": "https://github.com/patwork/deadline-timer",
   "version": 1
 }
