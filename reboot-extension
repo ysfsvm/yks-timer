@@ -1,0 +1,5 @@
+#!/bin/bash
+for arg in disable reset enable show ; do
+	echo $arg...
+	gnome-extensions $arg deadline_timer@patwork.pl
+done
