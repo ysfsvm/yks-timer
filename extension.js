@@ -99,7 +99,7 @@ class Extension {
                 gicon: new Gio.ThemedIcon({
                     name: IconsEmotes[key],
                 }),
-                style_class: "system-status-icon",
+                style_class: `system-status-icon deadline-timer-icon-${key}`,
                 y_align: Clutter.ActorAlign.CENTER,
             });
             this._box.add_child(this._icons[key]);
