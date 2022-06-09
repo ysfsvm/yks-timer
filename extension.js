@@ -19,11 +19,6 @@
 /* exported init */
 "use strict";
 
-const TIMESTAMP_BEGIN = Math.floor(
-    new Date(Date.UTC(2022, 5, 10, 20, 0)) / 1000
-);
-const TIMESTAMP_END = Math.floor(new Date(Date.UTC(2022, 5, 10, 20, 0)) / 1000);
-
 const SEC_IN_MINUTE = 60;
 const SEC_IN_HOUR = SEC_IN_MINUTE * 60;
 const SEC_IN_DAY = SEC_IN_HOUR * 24;
@@ -77,15 +72,17 @@ class Extension {
         this._icons = {};
         this._label = null;
 
-        // prepare timestamps
-        this._beginTimestamp = Math.min(TIMESTAMP_BEGIN, TIMESTAMP_END);
-        this._endTimestamp = Math.max(TIMESTAMP_BEGIN, TIMESTAMP_END);
-        this._period = this._endTimestamp - this._beginTimestamp;
+        this._beginTimestamp = null;
+        this._endTimestamp = null;
+        this._period = null;
     }
 
     // ---------------------------------------------------------------
     enable() {
         log(`(*) enabling ${Me.metadata.name}`);
+
+        // read dates from prefs.json
+        this._read_prefs();
 
         // unique indicator name
         let indicatorName = `${Me.metadata.name} Indicator`;
@@ -232,6 +229,48 @@ class Extension {
                 this._icons[key].hide();
             }
         });
+    }
+
+    // ---------------------------------------------------------------
+    _read_prefs() {
+        let status, data, text, prefs;
+        let file = Me.dir.get_child("prefs.json");
+        [status, data] = file.load_contents(null);
+        text = String.fromCharCode.apply(null, data);
+        prefs = JSON.parse(text);
+
+        // UTC timestamps from prefs
+        const TIMESTAMP_BEGIN = Math.floor(
+            new Date(
+                Date.UTC(
+                    prefs.utcDateBegin[0],
+                    prefs.utcDateBegin[1] - 1,
+                    prefs.utcDateBegin[2],
+                    prefs.utcDateBegin[3],
+                    prefs.utcDateBegin[4]
+                )
+            ) / 1000
+        );
+        const TIMESTAMP_END = Math.floor(
+            new Date(
+                Date.UTC(
+                    prefs.utcDateEnd[0],
+                    prefs.utcDateEnd[1] - 1,
+                    prefs.utcDateEnd[2],
+                    prefs.utcDateEnd[3],
+                    prefs.utcDateEnd[4]
+                )
+            ) / 1000
+        );
+
+        // info
+        log(new Date(TIMESTAMP_BEGIN * 1000).toUTCString());
+        log(new Date(TIMESTAMP_END * 1000).toUTCString());
+
+        // prepare timestamps
+        this._beginTimestamp = Math.min(TIMESTAMP_BEGIN, TIMESTAMP_END);
+        this._endTimestamp = Math.max(TIMESTAMP_BEGIN, TIMESTAMP_END);
+        this._period = this._endTimestamp - this._beginTimestamp;
     }
 }
 
