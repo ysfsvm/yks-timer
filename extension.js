@@ -19,8 +19,10 @@
 /* exported init */
 "use strict";
 
-const TIMESTAMP_BEGIN = Math.floor(new Date(2022, 4, 27, 0, 0) / 1000);
-const TIMESTAMP_END = Math.floor(new Date(2022, 5, 6, 0, 0) / 1000);
+const TIMESTAMP_BEGIN = Math.floor(
+    new Date(Date.UTC(2022, 5, 10, 20, 0)) / 1000
+);
+const TIMESTAMP_END = Math.floor(new Date(Date.UTC(2022, 5, 10, 20, 0)) / 1000);
 
 const SEC_IN_MINUTE = 60;
 const SEC_IN_HOUR = SEC_IN_MINUTE * 60;
@@ -41,6 +43,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
 const IconsEmotes = {
+    angel: "face-angel-symbolic",
     cool: "face-cool-symbolic",
     smile: "face-smile-symbolic",
     plain: "face-plain-symbolic",
@@ -50,6 +53,7 @@ const IconsEmotes = {
 };
 
 const LabelsTime = {
+    before: "CHILLOUT",
     days: "{0}d {1}h ({2}%)",
     hours: "{0}h {1}m ({2}%)",
     minutes: "{0}m {1}s ({2}%)",
@@ -142,17 +146,25 @@ class Extension {
     // ---------------------------------------------------------------
     _on_timeout() {
         let currentTimestamp = Math.floor(new Date().getTime() / 1000);
-        let diffTimestamp = this._endTimestamp - currentTimestamp;
+        let diffBeginTimestamp = currentTimestamp - this._beginTimestamp;
+        let diffEndTimestamp = this._endTimestamp - currentTimestamp;
+
+        // check if too early
+        if (diffBeginTimestamp < 0) {
+            this._label.text = LabelsTime.before;
+            this._show_icon("angel");
+            return true;
+        }
 
         // check if past deadline
-        if (diffTimestamp < 0) {
+        if (diffEndTimestamp < 0) {
             this._label.text = LabelsTime.deadline;
             this._show_icon("sick");
             return true;
         }
 
         // calculate timers
-        let secondsLeft = diffTimestamp;
+        let secondsLeft = diffEndTimestamp;
 
         let daysLeft = Math.floor(secondsLeft / SEC_IN_DAY);
         secondsLeft -= daysLeft * SEC_IN_DAY;
@@ -164,7 +176,7 @@ class Extension {
         secondsLeft -= minutesLeft * SEC_IN_MINUTE;
 
         // calculate percent passed
-        let percentPass = 100.0 - (diffTimestamp / this._period) * 100.0;
+        let percentPass = 100.0 - (diffEndTimestamp / this._period) * 100.0;
         if (percentPass > 99.0) {
             percentPass = percentPass.toFixed(2);
         } else {
@@ -172,13 +184,13 @@ class Extension {
         }
 
         // labels
-        if (diffTimestamp < SEC_IN_HOUR) {
+        if (diffEndTimestamp < SEC_IN_HOUR) {
             this._set_label(LabelsTime.minutes, [
                 minutesLeft,
                 secondsLeft,
                 percentPass,
             ]);
-        } else if (diffTimestamp < SEC_IN_DAY) {
+        } else if (diffEndTimestamp < SEC_IN_DAY) {
             this._set_label(LabelsTime.hours, [
                 hoursLeft,
                 minutesLeft,
