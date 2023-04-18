@@ -1,4 +1,4 @@
-# YKS TİMER
+# YKS TIMER
 
 YKS countdown timer extension for gnome shell.
 
