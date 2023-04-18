@@ -1,14 +1,9 @@
-# Deadline Timer
+# YKS TİMER
 
-Deadline countdown timer extension for Gnome Shell. Created to measure the time until the end of game jams.
+YKS countdown timer extension for gnome shell.
 
-![screenshot](https://raw.githubusercontent.com/patwork/deadline-timer/master/screenshot.png)
+![screenshot](https://raw.githubusercontent.com/ysfsvm/yks-timer/master/screenshot.png)
 
-Developed and tested on Gnome Shell v3.36.
+Tested on Gnome Shell v43.
 
-Inspiration:
-- https://linuxhint.com/countdown-timer-app-ubuntu/
-- https://extensions.gnome.org/extension/667/weekend-o-meter/
-- https://github.com/olebowle/gnome-shell-timer
-- https://github.com/bjarosze/gnome-bluetooth-quick-connect
-- https://github.com/zagortenay333/timepp
+## All main code from https://github.com/patwork/deadline-timer

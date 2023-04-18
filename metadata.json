@@ -1,7 +1,7 @@
 {
-  "uuid": "deadline_timer@patwork.pl",
-  "name": "Deadline timer",
-  "description": "Deadline countdown timer extension for Gnome Shell",
+  "uuid": "yks_timer@ysfsvm",
+  "name": "YKS timer",
+  "description": "YKS timer extension for Gnome Shell / All main code from https://github.com/patwork/deadline-timer",
   "shell-version": [
     "3.38",
     "40",
@@ -9,6 +9,6 @@
     "42",
     "43"
   ],
-  "url": "https://github.com/patwork/deadline-timer",
+  "url": "https://github.com/ysfsvm/yks-timer",
   "version": 1
 }
