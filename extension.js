@@ -30,7 +30,6 @@ const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 
 const ExtensionUtils = imports.misc.extensionUtils;
@@ -118,7 +117,7 @@ class Extension {
         this._on_timeout();
         this._timeout = Mainloop.timeout_add_seconds(
             1,
-            Lang.bind(this, this._on_timeout)
+            this._on_timeout.bind(this)
         );
 
         // add indicator to panel
@@ -264,8 +263,8 @@ class Extension {
         );
 
         // info
-        log(new Date(TIMESTAMP_BEGIN * 1000).toUTCString());
-        log(new Date(TIMESTAMP_END * 1000).toUTCString());
+        // log(new Date(TIMESTAMP_BEGIN * 1000).toUTCString());
+        // log(new Date(TIMESTAMP_END * 1000).toUTCString());
 
         // prepare timestamps
         this._beginTimestamp = Math.min(TIMESTAMP_BEGIN, TIMESTAMP_END);

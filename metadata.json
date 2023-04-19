@@ -1,7 +1,7 @@
 {
   "uuid": "yks_timer@ysfsvm",
-  "name": "YKS timer",
-  "description": "YKS timer extension for Gnome Shell / All main code from https://github.com/patwork/deadline-timer",
+  "name": "YKS Timer",
+  "description": "YKS Timer extension for Gnome Shell",
   "shell-version": [
     "3.38",
     "40",
@@ -10,5 +10,5 @@
     "43"
   ],
   "url": "https://github.com/ysfsvm/yks-timer",
-  "version": 1
+  "version": 1.1
 }

@@ -1,0 +1,118 @@
+diff --git a/.editorconfig b/.editorconfig
+deleted file mode 100644
+index 085f353..0000000
+--- a/.editorconfig
++++ /dev/null
+@@ -1,17 +0,0 @@
+-# https://EditorConfig.org
+-
+-# top-most EditorConfig file
+-root = true
+-
+-# Unix-style newlines with a newline ending every file
+-[*]
+-end_of_line = lf
+-insert_final_newline = true
+-trim_trailing_whitespace = true
+-
+-# JavaScript
+-[*.js]
+-indent_style = space
+-indent_size = 4
+-
+-# EoF
+diff --git a/README.md b/README.md
+index 9faec43..d03b937 100644
+--- a/README.md
++++ b/README.md
+@@ -1,9 +1,13 @@
+ # YKS TIMER
+ 
+-YKS countdown timer extension for gnome shell.
++YKS TIMER is a handy gnome shell extension that displays the remaining time until the YKS (Yükseköğretim Kurumları Sınavı) exam, which is a national higher education entrance exam in Turkey. With this extension, you can easily keep track of the time left until the exam day right from your panel.
++
++The countdown is displayed in the panel, so it doesn't take up space on your desktop and is always easily accessible.
++
++Stay on top of your YKS exam preparation with YKS TIMER and never miss an important deadline again!
+ 
+ ![screenshot](https://raw.githubusercontent.com/ysfsvm/yks-timer/master/screenshot.png)
+ 
+ Tested on Gnome Shell v43.
+ 
+-## All main code from https://github.com/patwork/deadline-timer
++## Fork from https://github.com/patwork/deadline-timer
+\ No newline at end of file
+diff --git a/extension.js b/extension.js
+index 8157607..268df6e 100644
+--- a/extension.js
++++ b/extension.js
+@@ -30,7 +30,6 @@ const Clutter = imports.gi.Clutter;
+ const Main = imports.ui.main;
+ const PanelMenu = imports.ui.panelMenu;
+ 
+-const Lang = imports.lang;
+ const Mainloop = imports.mainloop;
+ 
+ const ExtensionUtils = imports.misc.extensionUtils;
+@@ -118,7 +117,7 @@ class Extension {
+         this._on_timeout();
+         this._timeout = Mainloop.timeout_add_seconds(
+             1,
+-            Lang.bind(this, this._on_timeout)
++            this._on_timeout.bind(this)
+         );
+ 
+         // add indicator to panel
+@@ -264,8 +263,8 @@ class Extension {
+         );
+ 
+         // info
+-        log(new Date(TIMESTAMP_BEGIN * 1000).toUTCString());
+-        log(new Date(TIMESTAMP_END * 1000).toUTCString());
++        // log(new Date(TIMESTAMP_BEGIN * 1000).toUTCString());
++        // log(new Date(TIMESTAMP_END * 1000).toUTCString());
+ 
+         // prepare timestamps
+         this._beginTimestamp = Math.min(TIMESTAMP_BEGIN, TIMESTAMP_END);
+diff --git a/metadata.json b/metadata.json
+index 9c22bc0..8ca44a9 100644
+--- a/metadata.json
++++ b/metadata.json
+@@ -1,7 +1,7 @@
+ {
+   "uuid": "yks_timer@ysfsvm",
+-  "name": "YKS timer",
+-  "description": "YKS timer extension for Gnome Shell / All main code from https://github.com/patwork/deadline-timer",
++  "name": "YKS Timer",
++  "description": "YKS Timer extension for Gnome Shell",
+   "shell-version": [
+     "3.38",
+     "40",
+@@ -10,5 +10,5 @@
+     "43"
+   ],
+   "url": "https://github.com/ysfsvm/yks-timer",
+-  "version": 1
++  "version": 1.1
+ }
+diff --git a/prefs.json b/prefs.json
+index 158a2da..bc9b44c 100644
+--- a/prefs.json
++++ b/prefs.json
+@@ -1,4 +1,4 @@
+ {
+-  "utcDateBegin": [2023, 4, 17, 3, 0],
++  "utcDateBegin": [2022, 6, 18, 10, 15],
+   "utcDateEnd": [2023, 6, 17, 10, 15]
+ }
+diff --git a/reboot-extension b/reboot-extension
+deleted file mode 100755
+index 6850143..0000000
+--- a/reboot-extension
++++ /dev/null
+@@ -1,5 +0,0 @@
+-#!/bin/bash
+-for arg in disable reset enable show ; do
+-	echo $arg...
+-	gnome-extensions $arg deadline_timer@patwork.pl
+-done
