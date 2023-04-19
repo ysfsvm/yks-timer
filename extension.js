@@ -78,7 +78,7 @@ class Extension {
 
     // ---------------------------------------------------------------
     enable() {
-        log(`(*) enabling ${Me.metadata.name}`);
+        // log(`(*) enabling ${Me.metadata.name}`);
 
         // read dates from prefs.json
         this._read_prefs();
@@ -126,7 +126,7 @@ class Extension {
 
     // ---------------------------------------------------------------
     disable() {
-        log(`(*) disabling ${Me.metadata.name}`);
+        // log(`(*) disabling ${Me.metadata.name}`);
 
         // remove timeout
         if (this._timeout) {
@@ -275,7 +275,7 @@ class Extension {
 
 // ---------------------------------------------------------------
 function init() {
-    log(`(*) initializing ${Me.metadata.name}`);
+    // log(`(*) initializing ${Me.metadata.name}`);
     return new Extension();
 }
 

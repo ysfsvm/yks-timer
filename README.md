@@ -10,4 +10,4 @@ Stay on top of your YKS exam preparation with YKS TIMER and never miss an import
 
 Tested on Gnome Shell v43.
 
-## Fork from https://github.com/patwork/deadline-timer
+## Fork of https://github.com/patwork/deadline-timer
