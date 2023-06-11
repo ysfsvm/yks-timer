@@ -1,4 +1,4 @@
-# YKS TIMER
+# <img src="https://extensions.gnome.org/extension-data/icons/icon_5910_OdYKqhD.png"  width="3%"> YKS TIMER
 
 YKS TIMER is a handy gnome shell extension that displays the remaining time until the YKS (Yükseköğretim Kurumları Sınavı) exam, which is a national higher education entrance exam in Turkey. With this extension, you can easily keep track of the time left until the exam day right from your panel.
 
