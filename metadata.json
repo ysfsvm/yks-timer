@@ -3,12 +3,10 @@
   "name": "YKS Timer",
   "description": "YKS Timer extension for Gnome Shell / Fork of https://github.com/patwork/deadline-timer",
   "shell-version": [
-    "3.38",
-    "40",
-    "41",
-    "42",
-    "43",
-    "44"
+    "45",
+    "46",
+    "47",
+    "48"
   ],
   "url": "https://github.com/ysfsvm/yks-timer",
   "version": 5

@@ -16,25 +16,19 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-/* exported init */
-"use strict";
+import St from 'gi://St';
+import Gio from 'gi://Gio';
+import Clutter from 'gi://Clutter';
+import GLib from 'gi://GLib';
+
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+
+import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const SEC_IN_MINUTE = 60;
 const SEC_IN_HOUR = SEC_IN_MINUTE * 60;
 const SEC_IN_DAY = SEC_IN_HOUR * 24;
-
-const St = imports.gi.St;
-const Gio = imports.gi.Gio;
-const Clutter = imports.gi.Clutter;
-
-const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
-
-const Mainloop = imports.mainloop;
-
-const ExtensionUtils = imports.misc.extensionUtils;
-
-const Me = ExtensionUtils.getCurrentExtension();
 
 const IconsEmotes = {
     angel: "face-angel-symbolic",
@@ -62,9 +56,9 @@ const FeelingTiers = {
     95: "surprise",
 };
 
-class Extension {
-    // ---------------------------------------------------------------
-    constructor() {
+export default class YKSTimerExtension extends Extension {
+    constructor(metadata) {
+        super(metadata);
         this._indicator = null;
         this._timeout = null;
         this._box = null;
@@ -76,15 +70,12 @@ class Extension {
         this._period = null;
     }
 
-    // ---------------------------------------------------------------
     enable() {
-        // log(`(*) enabling ${Me.metadata.name}`);
-
         // read dates from prefs.json
         this._read_prefs();
 
         // unique indicator name
-        let indicatorName = `${Me.metadata.name} Indicator`;
+        let indicatorName = `${this.metadata.name} Indicator`;
 
         // create panel button
         this._indicator = new PanelMenu.Button(0.0, indicatorName, false);
@@ -107,7 +98,7 @@ class Extension {
 
         // create label
         this._label = new St.Label({
-            text: Me.metadata.name,
+            text: this.metadata.name,
             style_class: "ns-horizontal-label",
             y_align: Clutter.ActorAlign.CENTER,
         });
@@ -115,22 +106,23 @@ class Extension {
 
         // register timeout function
         this._on_timeout();
-        this._timeout = Mainloop.timeout_add_seconds(
+        this._timeout = GLib.timeout_add_seconds(
+            GLib.PRIORITY_DEFAULT,
             1,
-            this._on_timeout.bind(this)
+            () => {
+                this._on_timeout();
+                return GLib.SOURCE_CONTINUE;
+            }
         );
 
         // add indicator to panel
         Main.panel.addToStatusArea(indicatorName, this._indicator);
     }
 
-    // ---------------------------------------------------------------
     disable() {
-        // log(`(*) disabling ${Me.metadata.name}`);
-
         // remove timeout
         if (this._timeout) {
-            Mainloop.source_remove(this._timeout);
+            GLib.Source.remove(this._timeout);
             this._timeout = null;
         }
 
@@ -139,7 +131,6 @@ class Extension {
         this._indicator = null;
     }
 
-    // ---------------------------------------------------------------
     _on_timeout() {
         let currentTimestamp = Math.floor(new Date().getTime() / 1000);
         let diffBeginTimestamp = currentTimestamp - this._beginTimestamp;
@@ -149,14 +140,14 @@ class Extension {
         if (diffBeginTimestamp < 0) {
             this._label.text = LabelsTime.before;
             this._show_icon("angel");
-            return true;
+            return;
         }
 
         // check if past deadline
         if (diffEndTimestamp < 0) {
             this._label.text = LabelsTime.deadline;
             this._show_icon("sick");
-            return true;
+            return;
         }
 
         // calculate timers
@@ -208,18 +199,14 @@ class Extension {
             }
         });
         this._show_icon(icon);
-
-        return true;
     }
 
-    // ---------------------------------------------------------------
     _set_label(template, args) {
         this._label.text = template.replace(/{(\d+)}/g, function (match, idx) {
             return args[idx];
         });
     }
 
-    // ---------------------------------------------------------------
     _show_icon(name) {
         Object.keys(this._icons).forEach((key) => {
             if (key === name) {
@@ -230,10 +217,9 @@ class Extension {
         });
     }
 
-    // ---------------------------------------------------------------
     _read_prefs() {
         let status, data, text, prefs;
-        let file = Me.dir.get_child("prefs.json");
+        let file = this.dir.get_child("prefs.json");
         [status, data] = file.load_contents(null);
         text = String.fromCharCode.apply(null, data);
         prefs = JSON.parse(text);
@@ -248,8 +234,9 @@ class Extension {
                     prefs.utcDateBegin[3],
                     prefs.utcDateBegin[4]
                 )
-            ) / 1000
+            ).getTime() / 1000
         );
+
         const TIMESTAMP_END = Math.floor(
             new Date(
                 Date.UTC(
@@ -259,24 +246,13 @@ class Extension {
                     prefs.utcDateEnd[3],
                     prefs.utcDateEnd[4]
                 )
-            ) / 1000
+            ).getTime() / 1000
         );
 
-        // info
-        // log(new Date(TIMESTAMP_BEGIN * 1000).toUTCString());
-        // log(new Date(TIMESTAMP_END * 1000).toUTCString());
-
-        // prepare timestamps
-        this._beginTimestamp = Math.min(TIMESTAMP_BEGIN, TIMESTAMP_END);
-        this._endTimestamp = Math.max(TIMESTAMP_BEGIN, TIMESTAMP_END);
+        this._beginTimestamp = TIMESTAMP_BEGIN;
+        this._endTimestamp = TIMESTAMP_END;
         this._period = this._endTimestamp - this._beginTimestamp;
     }
-}
-
-// ---------------------------------------------------------------
-function init() {
-    // log(`(*) initializing ${Me.metadata.name}`);
-    return new Extension();
 }
 
 /* EoF */
