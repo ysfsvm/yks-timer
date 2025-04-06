@@ -68,11 +68,13 @@ export default class YKSTimerExtension extends Extension {
         this._beginTimestamp = null;
         this._endTimestamp = null;
         this._period = null;
+
+        this._settings = this.getSettings('org.gnome.shell.extensions.yks-timer');
     }
 
     enable() {
-        // read dates from prefs.json
-        this._read_prefs();
+        // read dates from settings
+        this._read_settings();
 
         // unique indicator name
         let indicatorName = `${this.metadata.name} Indicator`;
@@ -115,8 +117,21 @@ export default class YKSTimerExtension extends Extension {
             }
         );
 
-        // add indicator to panel
-        Main.panel.addToStatusArea(indicatorName, this._indicator);
+        // add indicator to panel based on position preference
+        const position = this._settings.get_string('bar-position');
+        switch (position) {
+            case 'left':
+                Main.panel.addToStatusArea(indicatorName, this._indicator, 0, 'left');
+                break;
+            case 'center':
+                Main.panel.addToStatusArea(indicatorName, this._indicator, 0, 'center');
+                break;
+            case 'right':
+                Main.panel.addToStatusArea(indicatorName, this._indicator, 0, 'right');
+                break;
+            default:
+                Main.panel.addToStatusArea(indicatorName, this._indicator);
+        }
     }
 
     disable() {
@@ -129,6 +144,44 @@ export default class YKSTimerExtension extends Extension {
         // remove indicator
         this._indicator.destroy();
         this._indicator = null;
+    }
+
+    _read_settings() {
+        const startDate = this._settings.get_string('start-date');
+        const endDate = this._settings.get_string('end-date');
+
+        if (!startDate || !endDate) {
+            log('YKS Timer: Please set start and end dates in preferences');
+            return;
+        }
+
+        // Parse dates
+        const startParts = startDate.split('-');
+        const endParts = endDate.split('-');
+
+        this._beginTimestamp = Math.floor(
+            new Date(
+                Date.UTC(
+                    parseInt(startParts[0]),
+                    parseInt(startParts[1]) - 1,
+                    parseInt(startParts[2]),
+                    0, 0, 0
+                )
+            ).getTime() / 1000
+        );
+
+        this._endTimestamp = Math.floor(
+            new Date(
+                Date.UTC(
+                    parseInt(endParts[0]),
+                    parseInt(endParts[1]) - 1,
+                    parseInt(endParts[2]),
+                    23, 59, 59
+                )
+            ).getTime() / 1000
+        );
+
+        this._period = this._endTimestamp - this._beginTimestamp;
     }
 
     _on_timeout() {
@@ -215,43 +268,6 @@ export default class YKSTimerExtension extends Extension {
                 this._icons[key].hide();
             }
         });
-    }
-
-    _read_prefs() {
-        let status, data, text, prefs;
-        let file = this.dir.get_child("prefs.json");
-        [status, data] = file.load_contents(null);
-        text = String.fromCharCode.apply(null, data);
-        prefs = JSON.parse(text);
-
-        // UTC timestamps from prefs
-        const TIMESTAMP_BEGIN = Math.floor(
-            new Date(
-                Date.UTC(
-                    prefs.utcDateBegin[0],
-                    prefs.utcDateBegin[1] - 1,
-                    prefs.utcDateBegin[2],
-                    prefs.utcDateBegin[3],
-                    prefs.utcDateBegin[4]
-                )
-            ).getTime() / 1000
-        );
-
-        const TIMESTAMP_END = Math.floor(
-            new Date(
-                Date.UTC(
-                    prefs.utcDateEnd[0],
-                    prefs.utcDateEnd[1] - 1,
-                    prefs.utcDateEnd[2],
-                    prefs.utcDateEnd[3],
-                    prefs.utcDateEnd[4]
-                )
-            ).getTime() / 1000
-        );
-
-        this._beginTimestamp = TIMESTAMP_BEGIN;
-        this._endTimestamp = TIMESTAMP_END;
-        this._period = this._endTimestamp - this._beginTimestamp;
     }
 }
 

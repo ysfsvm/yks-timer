@@ -9,5 +9,6 @@
     "48"
   ],
   "url": "https://github.com/ysfsvm/yks-timer",
-  "version": 5
+  "version": 5,
+  "settings-schema": "org.gnome.shell.extensions.yks-timer"
 }

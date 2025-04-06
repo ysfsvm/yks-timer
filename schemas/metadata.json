@@ -1,0 +1,6 @@
+{
+    "schema-id": "org.gnome.shell.extensions.yks-timer",
+    "gettext-domain": "yks-timer",
+    "settings-schema": "org.gnome.shell.extensions.yks-timer",
+    "settings-path": "/org/gnome/shell/extensions/yks-timer/"
+} 
