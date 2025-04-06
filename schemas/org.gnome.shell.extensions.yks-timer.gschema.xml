@@ -2,19 +2,19 @@
 <schemalist>
   <schema id="org.gnome.shell.extensions.yks-timer" path="/org/gnome/shell/extensions/yks-timer/">
     <key name="bar-position" type="s">
-      <default>'right'</default>
+      <default>"right"</default>
       <summary>Bar Position</summary>
       <description>Position of the timer bar in the panel</description>
     </key>
     <key name="start-date" type="s">
-      <default>''</default>
+      <default>""</default>
       <summary>Start Date</summary>
-      <description>Start date for the timer in YYYY-MM-DD format</description>
+      <description>Start date for the timer</description>
     </key>
     <key name="end-date" type="s">
-      <default>''</default>
+      <default>""</default>
       <summary>End Date</summary>
-      <description>End date for the timer in YYYY-MM-DD format</description>
+      <description>End date for the timer</description>
     </key>
   </schema>
 </schemalist> 

@@ -69,7 +69,13 @@ export default class YKSTimerExtension extends Extension {
         this._endTimestamp = null;
         this._period = null;
 
-        this._settings = this.getSettings('org.gnome.shell.extensions.yks-timer');
+        this._settings = this.getSettings();
+        this._settings.connect('changed', this._onSettingsChanged.bind(this));
+    }
+
+    _onSettingsChanged() {
+        // Re-read settings and update timer
+        this._read_settings();
     }
 
     enable() {
@@ -119,19 +125,18 @@ export default class YKSTimerExtension extends Extension {
 
         // add indicator to panel based on position preference
         const position = this._settings.get_string('bar-position');
-        switch (position) {
-            case 'left':
-                Main.panel.addToStatusArea(indicatorName, this._indicator, 0, 'left');
-                break;
-            case 'center':
-                Main.panel.addToStatusArea(indicatorName, this._indicator, 0, 'center');
-                break;
-            case 'right':
-                Main.panel.addToStatusArea(indicatorName, this._indicator, 0, 'right');
-                break;
-            default:
-                Main.panel.addToStatusArea(indicatorName, this._indicator);
-        }
+        Main.panel.addToStatusArea(indicatorName, this._indicator, 0, position);
+
+        // Connect to settings changes
+        this._settings.connect('changed::bar-position', () => {
+            const newPosition = this._settings.get_string('bar-position');
+            // Remove from current position
+            Main.panel._rightBox.remove_actor(this._indicator);
+            Main.panel._centerBox.remove_actor(this._indicator);
+            Main.panel._leftBox.remove_actor(this._indicator);
+            // Add to new position
+            Main.panel.addToStatusArea(indicatorName, this._indicator, 0, newPosition);
+        });
     }
 
     disable() {
@@ -147,44 +152,49 @@ export default class YKSTimerExtension extends Extension {
     }
 
     _read_settings() {
-        const startDate = this._settings.get_string('start-date');
-        const endDate = this._settings.get_string('end-date');
+        // Read start and end dates
+        const startDateStr = this._settings.get_string('start-date');
+        const endDateStr = this._settings.get_string('end-date');
 
-        if (!startDate || !endDate) {
+        if (startDateStr && endDateStr) {
+            try {
+                // Parse dates (YYYY-MM-DD)
+                const [startYear, startMonth, startDay] = startDateStr.split('-').map(Number);
+                const [endYear, endMonth, endDay] = endDateStr.split('-').map(Number);
+
+                // Create timestamps for start and end dates (at midnight)
+                this._beginTimestamp = new Date(startYear, startMonth - 1, startDay).getTime() / 1000;
+                this._endTimestamp = new Date(endYear, endMonth - 1, endDay).getTime() / 1000;
+
+                if (isNaN(this._beginTimestamp) || isNaN(this._endTimestamp)) {
+                    throw new Error('Invalid date values');
+                }
+
+                this._period = this._endTimestamp - this._beginTimestamp;
+                if (this._period <= 0) {
+                    throw new Error('End date must be after start date');
+                }
+            } catch (e) {
+                log(`YKS Timer: Error parsing dates: ${e.message}`);
+                this._beginTimestamp = null;
+                this._endTimestamp = null;
+                this._period = null;
+            }
+        } else {
             log('YKS Timer: Please set start and end dates in preferences');
-            return;
+            this._beginTimestamp = null;
+            this._endTimestamp = null;
+            this._period = null;
         }
-
-        // Parse dates
-        const startParts = startDate.split('-');
-        const endParts = endDate.split('-');
-
-        this._beginTimestamp = Math.floor(
-            new Date(
-                Date.UTC(
-                    parseInt(startParts[0]),
-                    parseInt(startParts[1]) - 1,
-                    parseInt(startParts[2]),
-                    0, 0, 0
-                )
-            ).getTime() / 1000
-        );
-
-        this._endTimestamp = Math.floor(
-            new Date(
-                Date.UTC(
-                    parseInt(endParts[0]),
-                    parseInt(endParts[1]) - 1,
-                    parseInt(endParts[2]),
-                    23, 59, 59
-                )
-            ).getTime() / 1000
-        );
-
-        this._period = this._endTimestamp - this._beginTimestamp;
     }
 
     _on_timeout() {
+        if (!this._beginTimestamp || !this._endTimestamp || !this._period) {
+            this._label.text = 'Invalid dates';
+            this._show_icon("sick");
+            return;
+        }
+
         let currentTimestamp = Math.floor(new Date().getTime() / 1000);
         let diffBeginTimestamp = currentTimestamp - this._beginTimestamp;
         let diffEndTimestamp = this._endTimestamp - currentTimestamp;
