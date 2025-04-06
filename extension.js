@@ -70,49 +70,56 @@ export default class YKSTimerExtension extends Extension {
         this._period = null;
 
         this._settings = this.getSettings();
-        this._settings.connect('changed', this._onSettingsChanged.bind(this));
     }
 
-    _onSettingsChanged() {
-        // Re-read settings and update timer
-        this._read_settings();
-    }
-
-    enable() {
-        // read dates from settings
-        this._read_settings();
-
-        // unique indicator name
+    _createIndicator() {
         let indicatorName = `${this.metadata.name} Indicator`;
 
-        // create panel button
         this._indicator = new PanelMenu.Button(0.0, indicatorName, false);
 
-        // create box
         this._box = new St.BoxLayout();
         this._indicator.add_child(this._box);
 
-        // create icons
         Object.keys(IconsEmotes).forEach((key) => {
             this._icons[key] = new St.Icon({
                 gicon: new Gio.ThemedIcon({
                     name: IconsEmotes[key],
                 }),
-                style_class: `system-status-icon deadline-timer-icon-${key}`,
+                style_class: 'system-status-icon',
                 y_align: Clutter.ActorAlign.CENTER,
             });
             this._box.add_child(this._icons[key]);
         });
 
-        // create label
         this._label = new St.Label({
             text: this.metadata.name,
-            style_class: "ns-horizontal-label",
             y_align: Clutter.ActorAlign.CENTER,
         });
         this._box.add_child(this._label);
 
-        // register timeout function
+        const position = this._settings.get_string('bar-position');
+        Main.panel.addToStatusArea(indicatorName, this._indicator, 0, position);
+    }
+
+    _onSettingsChanged(settings, key) {
+        if (key === 'bar-position') {
+            if (this._indicator) {
+                this._indicator.destroy();
+                this._indicator = null;
+            }
+            this._createIndicator();
+        } else {
+            this._read_settings();
+        }
+        
+        this._on_timeout();
+    }
+
+    enable() {
+        this._read_settings();
+
+        this._createIndicator();
+
         this._on_timeout();
         this._timeout = GLib.timeout_add_seconds(
             GLib.PRIORITY_DEFAULT,
@@ -123,46 +130,32 @@ export default class YKSTimerExtension extends Extension {
             }
         );
 
-        // add indicator to panel based on position preference
-        const position = this._settings.get_string('bar-position');
-        Main.panel.addToStatusArea(indicatorName, this._indicator, 0, position);
-
-        // Connect to settings changes
-        this._settings.connect('changed::bar-position', () => {
-            const newPosition = this._settings.get_string('bar-position');
-            // Remove from current position
-            Main.panel._rightBox.remove_actor(this._indicator);
-            Main.panel._centerBox.remove_actor(this._indicator);
-            Main.panel._leftBox.remove_actor(this._indicator);
-            // Add to new position
-            Main.panel.addToStatusArea(indicatorName, this._indicator, 0, newPosition);
-        });
+        this._settings.connect('changed::bar-position', this._onSettingsChanged.bind(this));
+        this._settings.connect('changed::start-date', this._onSettingsChanged.bind(this));
+        this._settings.connect('changed::end-date', this._onSettingsChanged.bind(this));
     }
 
     disable() {
-        // remove timeout
         if (this._timeout) {
             GLib.Source.remove(this._timeout);
             this._timeout = null;
         }
 
-        // remove indicator
-        this._indicator.destroy();
-        this._indicator = null;
+        if (this._indicator) {
+            this._indicator.destroy();
+            this._indicator = null;
+        }
     }
 
     _read_settings() {
-        // Read start and end dates
         const startDateStr = this._settings.get_string('start-date');
         const endDateStr = this._settings.get_string('end-date');
 
         if (startDateStr && endDateStr) {
             try {
-                // Parse dates (YYYY-MM-DD)
                 const [startYear, startMonth, startDay] = startDateStr.split('-').map(Number);
                 const [endYear, endMonth, endDay] = endDateStr.split('-').map(Number);
 
-                // Create timestamps for start and end dates (at midnight)
                 this._beginTimestamp = new Date(startYear, startMonth - 1, startDay).getTime() / 1000;
                 this._endTimestamp = new Date(endYear, endMonth - 1, endDay).getTime() / 1000;
 
@@ -199,21 +192,18 @@ export default class YKSTimerExtension extends Extension {
         let diffBeginTimestamp = currentTimestamp - this._beginTimestamp;
         let diffEndTimestamp = this._endTimestamp - currentTimestamp;
 
-        // check if too early
         if (diffBeginTimestamp < 0) {
             this._label.text = LabelsTime.before;
             this._show_icon("angel");
             return;
         }
 
-        // check if past deadline
         if (diffEndTimestamp < 0) {
             this._label.text = LabelsTime.deadline;
             this._show_icon("sick");
             return;
         }
 
-        // calculate timers
         let secondsLeft = diffEndTimestamp;
 
         let daysLeft = Math.floor(secondsLeft / SEC_IN_DAY);
@@ -225,7 +215,6 @@ export default class YKSTimerExtension extends Extension {
         let minutesLeft = Math.floor(secondsLeft / SEC_IN_MINUTE);
         secondsLeft -= minutesLeft * SEC_IN_MINUTE;
 
-        // calculate percent passed
         let percentPass = 100.0 - (diffEndTimestamp / this._period) * 100.0;
         if (percentPass > 99.0) {
             percentPass = percentPass.toFixed(2);
@@ -233,7 +222,6 @@ export default class YKSTimerExtension extends Extension {
             percentPass = Math.round(percentPass);
         }
 
-        // labels
         if (diffEndTimestamp < SEC_IN_HOUR) {
             this._set_label(LabelsTime.minutes, [
                 minutesLeft,
@@ -254,7 +242,6 @@ export default class YKSTimerExtension extends Extension {
             ]);
         }
 
-        // icons
         let icon = null;
         Object.keys(FeelingTiers).forEach((threshold) => {
             if (percentPass >= threshold) {
@@ -280,5 +267,3 @@ export default class YKSTimerExtension extends Extension {
         });
     }
 }
-
-/* EoF */

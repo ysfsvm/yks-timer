@@ -8,6 +8,6 @@ Stay on top of your YKS exam preparation with YKS TIMER and never miss an import
 
 ![screenshot](https://raw.githubusercontent.com/ysfsvm/yks-timer/master/screenshot.png)
 
-Tested on Gnome Shell v43 and v44.
+Tested on Gnome Shell v48.
 
 ## Fork of https://github.com/patwork/deadline-timer
