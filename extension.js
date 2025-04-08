@@ -68,8 +68,6 @@ export default class YKSTimerExtension extends Extension {
         this._beginTimestamp = null;
         this._endTimestamp = null;
         this._period = null;
-
-        this._settings = this.getSettings();
     }
 
     _createIndicator() {
@@ -97,7 +95,7 @@ export default class YKSTimerExtension extends Extension {
         });
         this._box.add_child(this._label);
 
-        const position = this._settings.get_string('bar-position');
+        const position = this.getSettings().get_string('bar-position');
         Main.panel.addToStatusArea(indicatorName, this._indicator, 0, position);
     }
 
@@ -116,23 +114,15 @@ export default class YKSTimerExtension extends Extension {
     }
 
     enable() {
-        this._read_settings();
-
+        this._settings = this.getSettings();
         this._createIndicator();
-
+        this._read_settings();
         this._on_timeout();
-        this._timeout = GLib.timeout_add_seconds(
-            GLib.PRIORITY_DEFAULT,
-            1,
-            () => {
-                this._on_timeout();
-                return GLib.SOURCE_CONTINUE;
-            }
-        );
-
-        this._settings.connect('changed::bar-position', this._onSettingsChanged.bind(this));
-        this._settings.connect('changed::start-date', this._onSettingsChanged.bind(this));
-        this._settings.connect('changed::end-date', this._onSettingsChanged.bind(this));
+        this._timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
+            this._on_timeout();
+            return GLib.SOURCE_CONTINUE;
+        });
+        this._settings.connect('changed', this._onSettingsChanged.bind(this));
     }
 
     disable() {
@@ -141,10 +131,37 @@ export default class YKSTimerExtension extends Extension {
             this._timeout = null;
         }
 
+        if (this._settings) {
+            this._settings.disconnect('changed', this._onSettingsChanged.bind(this));
+            this._settings = null;
+        }
+
         if (this._indicator) {
             this._indicator.destroy();
             this._indicator = null;
         }
+
+        if (this._box) {
+            this._box.destroy();
+            this._box = null;
+        }
+
+        Object.keys(this._icons).forEach(key => {
+            if (this._icons[key]) {
+                this._icons[key].destroy();
+                this._icons[key] = null;
+            }
+        });
+        this._icons = {};
+
+        if (this._label) {
+            this._label.destroy();
+            this._label = null;
+        }
+
+        this._beginTimestamp = null;
+        this._endTimestamp = null;
+        this._period = null;
     }
 
     _read_settings() {
