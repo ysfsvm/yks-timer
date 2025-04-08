@@ -95,7 +95,7 @@ export default class DeadlineTimerExtension extends Extension {
         });
         this._box.add_child(this._label);
 
-        const position = this.getSettings().get_string('bar-position');
+        const position = this._settings.get_string('bar-position');
         Main.panel.addToStatusArea(indicatorName, this._indicator, 0, position);
     }
 
