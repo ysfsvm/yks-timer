@@ -5,7 +5,7 @@ import Gio from 'gi://Gio';
 
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-export default class YKSTimerPreferences extends ExtensionPreferences {
+export default class DeadlineTimerPreferences extends ExtensionPreferences {
     constructor(metadata) {
         super(metadata);
     }

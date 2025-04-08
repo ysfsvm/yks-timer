@@ -56,7 +56,7 @@ const FeelingTiers = {
     95: "surprise",
 };
 
-export default class YKSTimerExtension extends Extension {
+export default class DeadlineTimerExtension extends Extension {
     constructor(metadata) {
         super(metadata);
         this._indicator = null;
@@ -185,13 +185,13 @@ export default class YKSTimerExtension extends Extension {
                     throw new Error('End date must be after start date');
                 }
             } catch (e) {
-                log(`YKS Timer: Error parsing dates: ${e.message}`);
+                log(`Deadline Timer: Error parsing dates: ${e.message}`);
                 this._beginTimestamp = null;
                 this._endTimestamp = null;
                 this._period = null;
             }
         } else {
-            log('YKS Timer: Please set start and end dates in preferences');
+            log('Deadline Timer: Please set start and end dates in preferences');
             this._beginTimestamp = null;
             this._endTimestamp = null;
             this._period = null;
